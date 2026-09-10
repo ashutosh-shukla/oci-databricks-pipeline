@@ -1,0 +1,18 @@
+# Prod connection params (no secrets here — use .env or a secret scope)
+environment: prod
+
+databricks:
+  host: "https://<prod-workspace>.cloud.databricks.com"
+  catalog: "prod_catalog"
+  schema: "prod_schema"
+  table: "source_table"
+
+oracle_adb:
+  service_name: "prod_high"
+  wallet_dir: "wallet/prod"
+  target_schema: "TARGET_SCHEMA"
+  target_table: "TARGET_TABLE"
+
+pipeline:
+  batch_size: 50000
+  log_level: "INFO"
