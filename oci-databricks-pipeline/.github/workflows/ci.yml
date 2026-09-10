@@ -1,0 +1,41 @@
+# CI workflow: lint/test on push, optional deploy trigger
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Lint
+        run: |
+          pip install flake8
+          flake8 src tests
+
+      - name: Test
+        run: |
+          pip install pytest
+          pytest tests/
+
+  # deploy:
+  #   needs: lint-test
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   steps:
+  #     - run: echo "Add deployment steps here"
