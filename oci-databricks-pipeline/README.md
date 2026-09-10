@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # oci-databricks-pipeline
 
 A pipeline that reads data from Databricks (Delta tables / volumes),
@@ -39,3 +40,6 @@ pytest tests/
 ## CI
 
 `.github/workflows/ci.yml` lints and tests on every push/PR to `main`.
+=======
+# oci-databricks-pipeline
+>>>>>>> 00e0eda8a5b37fcfadb1d302f2d409cd12851401
