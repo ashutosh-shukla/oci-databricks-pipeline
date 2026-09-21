@@ -145,7 +145,7 @@ def run_pipeline():
     finally:
         conn.close()
 
-        print("Pipeline complete.")
+    print("Pipeline complete.")
 
 
 if __name__ == "__main__":

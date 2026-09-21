@@ -27,10 +27,36 @@ def is_running_in_databricks() -> bool:
     return "DATABRICKS_RUNTIME_VERSION" in os.environ
 
 
+def get_secret(key: str, databricks_scope: str = "pipeline-secrets"):
+    """
+    Reads a secret from the right place depending on where we're running:
+        - Local (VS Code): from .env, via a plain environment variable
+        - Databricks: from a Secret Scope (since .env doesn't exist there —
+        it's gitignored, so it never made it into the Databricks Repo)
+
+        databricks_scope must already exist and hold a matching key name
+        (see the setup steps for creating it via the Databricks CLI).
+    """
+    if is_running_in_databricks():
+        from pyspark.sql import SparkSession
+        from pyspark.dbutils import DBUtils
+
+        spark = SparkSession.builder.getOrCreate()
+        dbutils = DBUtils(spark)
+        # Secret scope keys are conventionally lowercase-with-dashes
+        secret_key = key.lower().replace("_", "-")
+        try:
+            return dbutils.secrets.get(scope=databricks_scope, key=secret_key)
+        except Exception:
+            return None
+
+    return os.environ.get(key)
+
+
 def load_config(config_path: str = "config/config.dev.yaml") -> dict:
     """
-    Reads config.dev.yaml, then layers in secrets from environment variables
-    (which came from .env locally, or a Databricks secret scope in the cluster).
+    Reads config.dev.yaml, then layers in secrets — from .env locally, or a
+    Databricks Secret Scope when running inside a cluster/notebook.
 
     Returns a plain dict, e.g.:
         config["databricks"]["source_path"]
@@ -42,25 +68,26 @@ def load_config(config_path: str = "config/config.dev.yaml") -> dict:
         config = yaml.safe_load(f)
 
     # --- Inject secrets (never stored in the YAML file) -------------------
-    oci_password = os.environ.get("ORACLE_ADB_PASSWORD")
+    oci_password = get_secret("ORACLE_ADB_PASSWORD")
     if not oci_password:
         raise ValueError(
-            "ORACLE_ADB_PASSWORD not found. Make sure .env exists (copied "
-            "from .env.example) and has a real value set, or that it's set "
-            "as an environment variable / Databricks secret."
+            "ORACLE_ADB_PASSWORD not found. Locally: make sure .env exists "
+            "(copied from .env.example) with a real value. In Databricks: "
+            "make sure the 'pipeline-secrets' secret scope exists and has "
+            "an 'oracle-adb-password' key set."
         )
     config["oracle_adb"]["password"] = oci_password
-    config["oracle_adb"]["wallet_password"] = os.environ.get(
+    config["oracle_adb"]["wallet_password"] = get_secret(
         "ORACLE_ADB_WALLET_PASSWORD"
     )  # may be None, that's fine
 
-    # username and DSN also come from .env in this project's convention —
+    # username and DSN also come from secrets in this project's convention —
     # override whatever (if anything) is in the YAML file
-    env_username = os.environ.get("ORACLE_ADB_USER")
+    env_username = get_secret("ORACLE_ADB_USER")
     if env_username:
         config["oracle_adb"]["username"] = env_username
 
-    env_dsn = os.environ.get("ORACLE_ADB_DSN")
+    env_dsn = get_secret("ORACLE_ADB_DSN")
     if env_dsn:
         config["oracle_adb"]["service_name"] = env_dsn
 
