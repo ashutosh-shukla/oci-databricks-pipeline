@@ -26,8 +26,8 @@ jobs:
       - name: Lint
         run: |
           pip install flake8
-          flake8 src tests
-
+          flake8 src tests    #
+#flake 8 will check for style guide syntax problems formatting problems unused imports undefined names style issues enforcement in the src and tests directories
       - name: Test
         run: |
           pip install pytest

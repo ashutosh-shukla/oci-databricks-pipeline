@@ -2,16 +2,28 @@
 environment: dev
 
 databricks:
-  host: "https://<dev-workspace>.cloud.databricks.com"
-  catalog: "dev_catalog"
-  schema: "dev_schema"
-  table: "source_table"
+  host: "https://dbc-25ded6d1-7ae3.cloud.databricks.com"
+  catalog: "databricks_practice_catalog"
+  schema: "finance_data"
+  # No Delta table yet — CSV in the Volume is the only source for now.
+  # (Add a `table:` key back here later if you create a Delta table.)
+  source_path: "/Volumes/databricks_practice_catalog/finance_data/practice/banking_transactions_100col.csv"
+  csv_read_options:
+    header: true
+    inferSchema: true
 
 oracle_adb:
-  service_name: "dev_high"
-  wallet_dir: "wallet/dev"
-  target_schema: "TARGET_SCHEMA"
-  target_table: "TARGET_TABLE"
+  service_name: "etldb_high"                  # must match alias in wallet/tnsnames.ora
+  wallet_dir:
+    local: "C:/Users/LOQ/OneDrive/Desktop/de/oci-databricks-pipeline/wallet"
+    databricks: "/Volumes/databricks_practice_catalog/finance_data/wallet"
+  username: "ASHU"
+  target_schema: "ETLDB"
+  target_tables:                               # multiple destination tables (dataset_label -> real table name)
+    customers: "CUSTOMERS_DIM"
+    accounts: "ACCOUNTS_DIM"
+    transactions: "TRANSACTIONS_FACT"
+    customer_metrics: "CUSTOMER_ACTIVITY_METRICS"
 
 pipeline:
   batch_size: 10000
