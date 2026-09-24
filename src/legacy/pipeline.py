@@ -10,8 +10,8 @@ Run from PROJECT ROOT as: python -m src.pipeline
 """
 
 from src.utils.config_loader import load_config
-from src.extract.databricks_reader import get_spark, read_csv_from_volume
-from src.load.oci_writer import get_oracle_connection, write_dataframe_to_oracle
+from src.legacy.databricks_reader import get_spark, read_csv_from_volume
+from src.legacy.oci_writer import get_oracle_connection, write_dataframe_to_oracle
 
 # Column groupings match sql/create_tables.sql exactly.
 CUSTOMERS_COLS = [
