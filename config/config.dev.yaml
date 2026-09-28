@@ -1,30 +1,35 @@
-# Dev connection params (no secrets here — use .env or a secret scope)
+# ============================================================================
+# config.dev.yaml
+# Environment: LOCAL DEVELOPMENT
+#
+# Every value the pipeline needs that could change between environments
+# (local -> dev -> prod) lives here, not in Python code. When we move to
+# OCI Data Flow later, we'll add a config.prod.yaml with real bucket names,
+# compartment IDs, etc. For now, local dev only needs local paths.
+# ============================================================================
+
 environment: dev
 
-databricks:
-  host: "https://dbc-25ded6d1-7ae3.cloud.databricks.com"
-  catalog: "databricks_practice_catalog"
-  schema: "finance_data"
-  # No Delta table yet — CSV in the Volume is the only source for now.
-  # (Add a `table:` key back here later if you create a Delta table.)
-  source_path: "/Volumes/databricks_practice_catalog/finance_data/practice/banking_transactions_100col.csv"
-  csv_read_options:
-    header: true
-    inferSchema: true
+logging:
+  level: DEBUG                # DEBUG locally so we see everything; INFO/WARN in prod later
+  log_dir: logs
+  log_file: pipeline.log
+  console_output: true        # also print logs to terminal, not just the file
 
-oracle_adb:
-  service_name: "etldb_high"                  # must match alias in wallet/tnsnames.ora
-  wallet_dir:
-    local: "C:/Users/LOQ/OneDrive/Desktop/de/oci-databricks-pipeline/wallet"
-    databricks: "/Volumes/databricks_practice_catalog/finance_data/wallet"
-  username: "ASHU"
-  target_schema: "ETLDB"
-  target_tables:                               # multiple destination tables (dataset_label -> real table name)
-    customers: "CUSTOMERS_DIM"
-    accounts: "ACCOUNTS_DIM"
-    transactions: "TRANSACTIONS_FACT"
-    customer_metrics: "CUSTOMER_ACTIVITY_METRICS"
+paths:
+  local_data_dir: data                # where our 3 synthetic CSV batches live
+  local_delta_dir: local_warehouse/bronze_transactions   # local Delta table location (no cloud yet)
 
-pipeline:
-  batch_size: 10000
-  log_level: "DEBUG"
+spark:
+  app_name: banking_pipeline_dev
+  master: "local[*]"          # run Spark locally using all CPU cores, no cluster yet
+  shuffle_partitions: 4       # keep this low locally; small data doesn't need 200 partitions
+
+# OCI and Autonomous DB sections intentionally left empty for now —
+# we will not touch cloud services until the local bronze pipeline
+# is proven to work end-to-end.
+oci:
+  enabled: false
+
+autonomous_db:
+  enabled: false
