@@ -12,9 +12,23 @@ environment: dev
 
 logging:
   level: DEBUG                # DEBUG locally so we see everything; INFO/WARN in prod later
-  log_dir: logs
+  log_dir: /tmp/pipeline_logs
   log_file: pipeline.log
   console_output: true        # also print logs to terminal, not just the file
+
+databricks:
+  host: "https://dbc-25ded6d1-7ae3.cloud.databricks.com"
+  catalog: "databricks_practice_catalog"
+  schema: "finance_data"
+  volume: "practice"
+  source_path: "/Volumes/databricks_practice_catalog/finance_data/practice/banking_transactions_100col.csv"
+  bronze_table: "databricks_practice_catalog.finance_data.bronze_transactions"
+  csv_read_options:
+    header: "true"
+    inferSchema: "false"   # bronze keeps raw strings; typing happens in silver
+    sep: ","
+    quote: "\""
+    escape: "\""
 
 paths:
   local_data_dir: data                # where our 3 synthetic CSV batches live
